@@ -1,160 +1,45 @@
 from django.contrib.auth.models import User
-from django.http import HttpResponse, JsonResponse
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import Project, Book, ContactMe
-from rest_framework import viewsets, decorators, parsers, response, status
-from .serializers import ProjectSerializer, UserSerializer, BookSerializer, ContactSerializer
+from rest_framework import generics
+from rest_framework.permissions import AllowAny
+from .models import Project, ContactMe
+from .serializers import RegisterSerializer, ListUserSerializer, ProjectSerializer, ContactSerializer
 
 
-# Project Info viewset
-# allows us to create a CRUD api without specifying methods for functionality
+# user registration view
 
 
-class CreateProject(APIView):
-    #permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
-
-    def get(self, request, *args, **kwargs):
-        projects = Project.objects.all()
-        serializer = ProjectSerializer(projects, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, *args, **kwargs):
-        serializer = ProjectSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = RegisterSerializer
 
 
-class ProjectViewSet(viewsets.ModelViewSet):
-    queryset = Project.objects.filter(show=True)
+# user list view
+class ListUserView(generics.ListAPIView):
+    queryset = User.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = ListUserSerializer
+
+
+class ProjectView(generics.CreateAPIView):
+    queryset = Project.objects.all()
+    permission_classes = (AllowAny,)
     serializer_class = ProjectSerializer
 
-    def post(self, request, *args, **kwargs):
-        name = request.data['name']
-        description = request.data['description']
-        github_link = request.data['github_link']
-        demo_link = request.data['demo_link']
-        image = request.data['image']
-        date_published = request.data['date_published']
-        Project.objects.create(
-            name=name,
-            description=description,
-            github_link=github_link,
-            demo_link=demo_link,
-            image=image,
-            date_published=date_published
-        )
-        return HttpResponse({'message': 'Project Created'}, status=200)
+
+class ListProjectsView(generics.ListAPIView):
+    queryset = Project.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = ProjectSerializer
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+class ContactMeView(generics.CreateAPIView):
+    queryset = ContactMe.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = ContactSerializer
 
 
-class BookViewSet(viewsets.ModelViewSet):
-    queryset = Book.objects.all()
-    serializer_class = BookSerializer
-    authentication_classes = [TokenAuthentication, ]
-    permission_classes = [IsAuthenticated, ]
-
-
-class ContactMeView(APIView):
-    def get(self, request, *args, **kwargs):
-        messages = ContactMe.objects.all()
-        serializer = ContactSerializer(messages, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, *args, **kwargs):
-        serializer = ContactSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-'''
-from rest_framework.decorators import api_view, parser_classes
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.response import Response
-from .models import Project
-from .serializers import ProjectSerializer
-
-
-@api_view(['GET'])
-def apiOverview(request):
-    api_url = {
-        'List': '/project-list/',
-        'Detail View': '/project-detail/<str:pk>/',
-        'Create': '/project-create/',
-        'Update': '/project-delete/<str: pk/',
-
-    }
-    return Response(api_url)
-
-
-@api_view(['GET'])
-def projectList(request):
-    project = Project.objects.filter(show=True).order_by('-id')
-    serializer = ProjectSerializer(project, many=True)
-    return Response(serializer.data)
-
-
-@api_view(['GET'])
-def projectDetail(request, pk):
-    project = Project.objects.get(id=pk)
-    serializer = ProjectSerializer(project, many=False)
-    return Response(serializer.data)
-
-
-@api_view(['POST'])
-@parser_classes([MultiPartParser, FormParser])
-def projectCreate(request):
-    serializer = ProjectSerializer(data=request.data)
-
-    if serializer.is_valid():
-        serializer.save()
-    return Response(serializer.data)
-
-
-@api_view(['POST'])
-@parser_classes([MultiPartParser, FormParser])
-def projectUpdate(request, pk):
-    project = Project.objects.get(id=pk)
-    serializer = ProjectSerializer(instance=project, data=request.data)
-
-    if serializer.is_valid():
-        serializer.save()
-    return Response(serializer.data)
-
-
-@api_view(['DELETE'])
-def projectDelete(request, pk):
-    project = Project.objects.get(id=pk)
-    project.delete()
-    return Response('Project Deleted Successfully')
-
-
-@decorators.action(
-        detail=True,
-        methods=['PUT'],
-        serializer_class=ProjectImageSerializer,
-        parser_classes=[parsers.MultiPartParser],
-    )
-    def pic(self, request, pk):
-        obj = self.get_object()
-        serializer = self.serializer_class(obj, data=request.data, partial=True)
-
-        if serializer.is_valid():
-            serializer.save()
-            return response.Response(serializer.data)
-        return response.Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
-    
-'''
+class ListContactMeView(generics.ListAPIView):
+    queryset = ContactMe.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = ContactSerializer

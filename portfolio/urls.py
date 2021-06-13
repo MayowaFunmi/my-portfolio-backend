@@ -1,35 +1,13 @@
-from django.contrib import admin
 from django.urls import path
-from rest_framework import routers
-from .views import ProjectViewSet, UserViewSet, BookViewSet, CreateProject, ContactMeView
+from .views import RegisterView, ListUserView, ProjectView, ListProjectsView, ContactMeView, ListContactMeView
 
 app_name = 'project'
 
-router = routers.DefaultRouter()
-router.register('api/projects', ProjectViewSet)
-router.register('api/users', UserViewSet)
-router.register('api/books', BookViewSet)
-
 urlpatterns = [
-    path('create_project/', CreateProject.as_view(), name='create_project'),
-    path('contact_me/', ContactMeView.as_view(), name='contact_me'),
+    path('signup/', RegisterView.as_view(), name='signup'),
+    path('list_users/', ListUserView.as_view(), name='list_user'),
+    path('create_project/', ProjectView.as_view(), name='create_project'),
+    path('list_projects/', ListProjectsView.as_view(), name='list_projects'),
+    path('create_contact/', ContactMeView.as_view(), name='create_contact'),
+    path('list_contacts/', ListContactMeView.as_view(), name='list_contacts'),
 ]
-urlpatterns += router.urls
-
-''' 
-from django.urls import path
-from . import views
-
-app_name = 'project'
-
-
-urlpatterns = [
-    path('', views.apiOverview, name='api-overview'),
-    path('project-list/', views.projectList, name='project-list'),
-    path('project-detail/<int:pk>/', views.projectDetail, name='project-detail'),
-    path('project-create/', views.projectCreate, name='project-create'),
-    path('project-update/<int:pk>/', views.projectUpdate, name='project-update'),
-    path('project-delete/<int:pk>/', views.projectDelete, name='project-delete'),
-
-]
-'''
