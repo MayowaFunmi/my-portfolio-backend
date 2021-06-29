@@ -1,8 +1,11 @@
 from django.contrib.auth.models import User
-from rest_framework import generics
-from rest_framework.permissions import AllowAny
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+
 from .models import Project, ContactMe
-from .serializers import RegisterSerializer, ListUserSerializer, ProjectSerializer, ContactSerializer
+from .permissions import IsOwner
+from .serializers import RegisterSerializer, ListUserSerializer, ProjectSerializer, ContactSerializer, LogoutSerializer
 
 
 # user registration view
@@ -43,3 +46,16 @@ class ListContactMeView(generics.ListAPIView):
     queryset = ContactMe.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = ContactSerializer
+
+
+# logout views
+class LogoutView(generics.GenericAPIView):
+    serializer_class = LogoutSerializer
+    permission_classes = (IsAuthenticated, IsOwner)
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
